@@ -181,7 +181,6 @@ ${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${c
 
             // Compute local JavaScript calculation solutions via CDN engine hooks
             if (currentCubeString === SOLVED_STR) {
-		console.log("LOC 01: Solved");
                 solWrapper.style.display = "block";
                 solOutput.innerText = "Cube is already completely solved!";
                 return;
@@ -189,20 +188,12 @@ ${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${c
 
             try {
                 // The library computes Kociemba algorithms directly matching standard outputs
-		console.log("LOC 02.0: seeking")
-		console.log("LOC 02.1: "+currentCubeString);
                 let resultSol = cubeSolver.solve(currentCubeString, 'kociemba');
-		console.log("LOC 02.2: "+resultSol)
                 solWrapper.style.display = "block";
-		console.log("LOC 02.3")
                 solOutput.innerText = resultSol ? resultSol : "Optimal path verified or already at baseline.";
-		console.log("LOC 02.4")
             } catch (err) {
-		console.log("LOC 03.1")
                 solWrapper.style.display = "block";
-		console.log("LOC 03.2")
                 solOutput.innerText = "Processing sequence error. Verify input tracking validity.";
-		console.log("LOC 03.3")
             }
         }
 
