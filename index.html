@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -89,11 +89,13 @@
     <script src="https://cdn.jsdelivr.net/npm/cube-solver@2.4.1/bundle.js"></script>
 
     <script>
+	console.log("LOC 00.0")
+        <script src="https://cdn.jsdelivr.net/npm/cube-solver@2.4.1/bundle.js" onload="initSolver()"></script>
 	console.log("LOC 00.1")
         // Default solved cube baseline mapping sequence matching your engine structures
         const SOLVED_STR = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
         let currentCubeString = SOLVED_STR;
-	console.log("LOC 00.1")
+	console.log("LOC 00.2")
 
         // Base structural permutations exactly like your Python engine
         const BASE_MOVES = {
@@ -105,7 +107,24 @@
             'B': [(45, 47, 53, 51), (46, 50, 52, 48), (2, 36, 33, 17), (1, 39, 34, 14), (0, 42, 35, 11)]
         };
 
-	console.log("LOC 00.1")
+	// Add this near the top of your custom JavaScript logic block
+	let isSolverReady = false;
+
+	function initSolver() {
+	    console.log("CDN Library loaded successfully!");
+	        if (typeof cubeSolver !== 'undefined') {
+		    console.log("cubeSolver global object verified in memory.");
+		    isSolverReady = true;  
+		   // Optional: Pre-initialize the Kociemba tables so the first click is fast
+		   if (cubeSolver.initialize) {
+		       cubeSolver.initialize('kociemba');
+		   }
+                } else {
+		    console.log("Error: Script loaded but global object was not attached.");
+		}
+        }
+
+
         function applyClockwiseBase(face, stateArray) {
 	    console.log("LOC ACB 01");
             let nextState = [...stateArray];
@@ -214,7 +233,7 @@ ${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${c
                 solOutput.innerText = resultSol ? resultSol : "Optimal path verified or already at baseline.";
 	        console.log("LOC handleExecute 12 ");
             } catch (err) {
-	        console.log("LOC handleExecute 13 caught error"+err);
+	        console.log("LOC handleExecute 13 caught error "+err);
                 solWrapper.style.display = "block";
 	        console.log("LOC handleExecute 14 ");
                 solOutput.innerText = "Processing sequence error. Verify input tracking validity.";
