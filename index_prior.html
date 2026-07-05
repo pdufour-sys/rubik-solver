@@ -1,0 +1,286 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages Rubik Solver</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #1e1e1e;
+            color: #ffffff;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 { color: #4caf50; margin-bottom: 5px; }
+        .subtitle { color: #888; margin-bottom: 25px; }
+        .control-panel {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+            background: #111;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #45a049; }
+        button.secondary { background: #f44336; margin-left: 10px; }
+        button.secondary:hover { background: #da190b; }
+        pre {
+            background: #111;
+            padding: 20px;
+            border-radius: 6px;
+            font-size: 18px;
+            line-height: 1.2;
+            border-left: 4px solid #4caf50;
+            overflow-x: auto;
+        }
+        .solution-box {
+            background: #2e3b2e;
+            border: 1px solid #4caf50;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .meta-info { font-size: 14px; color: #aaa; margin-top: 10px;}
+    </style>
+</head>
+<body>
+
+    <h2>🧩 Brrrowser-Based Rubik's Cube Solver</h2>
+    <div class="subtitle">Zero Server Needed. Executing 100% locally via static JavaScript.</div>
+
+    <div class="control-panel">
+        <label for="scrambleInput"><strong>Enter Scramble or String:</strong></label><br><br>
+        <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2 or full 54-char string">
+        <button onclick="handleExecute()">Execute</button>
+        <button class="secondary" onclick="handleReset()">Reset</button>
+    </div>
+
+    <h3>Live Monospace Cross Projection:</h3>
+    <pre id="cubeLayout"></pre>
+    
+    <div class="meta-info" id="stringTracking"></div>
+
+    <div id="solutionWrapper" style="display:none;" class="solution-box">
+        <strong>💡 Solution Strategy Found:</strong>
+        <div id="solutionOutput" style="margin-top: 8px; color: #8bc34a; font-weight: bold;"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/cube-solver@2.4.1/dist/bundle.js" onload="initSolver()"></script>
+
+    <script>
+	console.log("LOC 00.0");
+	console.log("LOC 00.1");
+        
+        const SOLVED_STR = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
+        let currentCubeString = SOLVED_STR;
+	console.log("LOC 00.2");
+
+        // FIXED: Changed parentheses () to square brackets []
+        const BASE_MOVES = {
+            'U': [[0, 2, 8, 6], [1, 5, 7, 3], [38, 11, 20, 47], [37, 10, 19, 46], [36, 9, 18, 45]],
+            'D': [[27, 29, 35, 33], [28, 32, 34, 30], [24, 15, 42, 51], [25, 16, 43, 52], [26, 17, 44, 53]],
+            'R': [[9, 11, 17, 15], [10, 14, 16, 12], [2, 47, 29, 20], [5, 46, 32, 23], [8, 45, 35, 26]],
+            'L': [[36, 38, 44, 42], [37, 41, 43, 39], [0, 18, 27, 53], [3, 21, 30, 50], [6, 24, 33, 47]],
+            'F': [[18, 20, 26, 24], [19, 23, 25, 21], [6, 9, 29, 44], [7, 12, 28, 41], [8, 15, 27, 38]],
+            'B': [[45, 47, 53, 51], [46, 50, 52, 48], [2, 36, 33, 17], [1, 39, 34, 14], [0, 42, 35, 11]]
+        };
+
+	console.log("LOC 00.3");
+
+	let isSolverReady = false;
+
+	console.log("LOC 00.4");
+
+	function initSolver() {
+	    console.log("LOC initSolver LOC 01");
+	    console.log("CDN Library loaded successfully!");
+	    if (typeof cubeSolver !== 'undefined') {
+		console.log("cubeSolver global object verified in memory.");
+		isSolverReady = true;  
+		if (cubeSolver.initialize) {
+		    cubeSolver.initialize('kociemba');
+		}
+            } else {
+		console.log("Error: Script loaded but global object was not attached.");
+	    }
+        }
+
+	function initSolver() {
+	    console.log("LOC initSolver LOC 01");
+	    console.log("CDN Library loaded successfully!");
+	        if (typeof cubeSolver !== 'undefined') {
+		    console.log("cubeSolver global object verified in memory.");
+		    isSolverReady = true;  
+		   // Optional: Pre-initialize the Kociemba tables so the first click is fast
+		   if (cubeSolver.initialize) {
+		       cubeSolver.initialize('kociemba');
+		   }
+                } else {
+		    console.log("Error: Script loaded but global object was not attached.");
+		}
+        }
+
+
+        function applyClockwiseBase(face, stateArray) {
+	    console.log("LOC ACB 01");
+            let nextState = [...stateArray];
+            // Define manual cycle handling tuples explicitly matching our internal map mappings
+            const mappings = {
+                'U': [[0,2,8,6],[1,5,7,3],[38,11,20,47],[37,10,19,46],[36,9,18,45]],
+                'D': [[27,29,35,33],[28,32,34,30],[24,15,42,51],[25,16,43,52],[26,17,44,53]],
+                'R': [[9,11,17,15],[10,14,16,12],[2,47,29,20],[5,46,32,23],[8,45,35,26]],
+                'L': [[36,38,44,42],[37,41,43,39],[0,18,27,53],[3,21,30,50],[6,24,33,47]],
+                'F': [[18,20,26,24],[19,23,25,21],[6,9,29,44],[7,12,28,41],[8,15,27,38]],
+                'B': [[45,47,53,51],[46,50,52,48],[2,36,33,17],[1,39,34,14],[0,42,35,11]]
+            };
+            
+	    console.log("LOC ACB 02");
+            for (let c of mappings[face]) {
+                nextState[c[1]] = stateArray[c[0]];
+                nextState[c[2]] = stateArray[c[1]];
+                nextState[c[3]] = stateArray[c[2]];
+                nextState[c[0]] = stateArray[c[3]];
+            }
+	    console.log("LOC ACB 03");
+            return nextState;
+        }
+
+        function executeMoveSequence(seqStr, startString) {
+	    console.log("LOC executeMoveSequence 01");
+            let arr = startString.split("");
+            let moves = seqStr.trim().split(/\s+/);
+	    console.log("LOC executeMoveSequence 02");
+            for (let m of moves) {
+                if (!m) continue;
+                let face = m[0];
+                let iter = 1;
+                if (m.length > 1) {
+                    if (m[1] === '2') iter = 2;
+                    if (m[1] === "'" || m[1] === '3') iter = 3;
+                }
+                for (let i = 0; i < iter; i++) {
+                    arr = applyClockwiseBase(face, arr);
+                }
+            }
+	    console.log("LOC executeMoveSequence 03");
+            return arr.join("");
+        }
+
+        function renderDisplay(cubeStr) {
+	    console.log("LOC renderDisplay 01");
+            const layoutElement = document.getElementById("cubeLayout");
+            const trackingElement = document.getElementById("stringTracking");
+            
+            trackingElement.innerText = "Flat String: " + cubeStr;
+
+            // Generate clean ASCII layout block
+            layoutElement.innerText = `-------------------------------------------
+          ${cubeStr[0]} ${cubeStr[1]} ${cubeStr[2]}
+          ${cubeStr[3]} ${cubeStr[4]} ${cubeStr[5]}
+          ${cubeStr[6]} ${cubeStr[7]} ${cubeStr[8]}
+-------------------------------------------
+${cubeStr[45]} ${cubeStr[46]} ${cubeStr[47]} | ${cubeStr[36]} ${cubeStr[37]} ${cubeStr[38]} | ${cubeStr[18]} ${cubeStr[19]} ${cubeStr[20]} | ${cubeStr[9]} ${cubeStr[10]} ${cubeStr[11]}
+${cubeStr[48]} ${cubeStr[49]} ${cubeStr[50]} | ${cubeStr[39]} ${cubeStr[40]} ${cubeStr[41]} | ${cubeStr[21]} ${cubeStr[22]} ${cubeStr[23]} | ${cubeStr[12]} ${cubeStr[13]} ${cubeStr[14]}
+${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${cubeStr[44]} | ${cubeStr[24]} ${cubeStr[25]} ${cubeStr[26]} | ${cubeStr[15]} ${cubeStr[16]} ${cubeStr[17]}
+-------------------------------------------
+          ${cubeStr[27]} ${cubeStr[28]} ${cubeStr[29]}
+          ${cubeStr[30]} ${cubeStr[31]} ${cubeStr[32]}
+          ${cubeStr[33]} ${cubeStr[34]} ${cubeStr[35]}
+-------------------------------------------`;
+        }
+
+        function handleExecute() {
+	    console.log("LOC handleExecute 01")
+
+	    // Safety gate: stop the function if the library isn't verified yet
+	    if (!isSolverReady) {
+	        console.log("LOC handleExecute - Solver not ready yet!");
+		alert("The cube solver library is still loading in the background. Please try again in a moment.");
+		return;
+            }
+        
+            const rawVal = document.getElementById("scrambleInput").value.trim();
+
+            const solWrapper = document.getElementById("solutionWrapper");
+            const solOutput = document.getElementById("solutionOutput");
+
+            // Check if user input an explicit 54 character state map string directly
+            if (rawVal.length === 54 && /^[URFDLB]+$/i.test(rawVal)) {
+	        console.log("LOC handleExecute 02")
+                currentCubeString = rawVal.toUpperCase();
+            } else {
+	        console.log("LOC handleExecute 03")
+                // Otherwise treat input value as sequential structural turns
+                currentCubeString = executeMoveSequence(rawVal, currentCubeString);
+	        console.log("LOC handleExecute 04")
+            }
+
+	    console.log("LOC handleExecute 05")
+            renderDisplay(currentCubeString);
+	    console.log("LOC handleExecute 06")
+
+            // Compute local JavaScript calculation solutions via CDN engine hooks
+            if (currentCubeString === SOLVED_STR) {
+	        console.log("LOC handleExecute 06 solved")
+                solWrapper.style.display = "block";
+                solOutput.innerText = "Cube is already completely solved!";
+                return;
+            }
+
+            try {
+                // The library computes Kociemba algorithms directly matching standard outputs
+	        console.log("LOC handleExecute seeking");
+	        console.log("LOC handleExecute "+currentCubeString);
+                let resultSol = cubeSolver.solve(currentCubeString, 'kociemba');
+	        console.log("LOC handleExecute 10 ");
+                solWrapper.style.display = "block";
+	        console.log("LOC handleExecute 11 ");
+                solOutput.innerText = resultSol ? resultSol : "Optimal path verified or already at baseline.";
+	        console.log("LOC handleExecute 12 ");
+            } catch (err) {
+	        console.log("LOC handleExecute 13 caught error "+err);
+                solWrapper.style.display = "block";
+	        console.log("LOC handleExecute 14 ");
+                solOutput.innerText = "Processing sequence error. Verify input tracking validity.";
+	        console.log("LOC handleExecute 15 ");
+            }
+        }
+
+        function handleReset() {
+	    console.log("LOC handleReset 00 ");
+            currentCubeString = SOLVED_STR;
+	    console.log("LOC handleReset 01 ");
+            document.getElementById("scrambleInput").value = "R2 U' F L2";
+	    console.log("LOC handleReset 02 ");
+            document.getElementById("solutionWrapper").style.display = "none";
+	    console.log("LOC handleReset 03 "+currentCubeString);
+            renderDisplay(currentCubeString);
+	    console.log("LOC handleReset 04 ");
+        }
+
+        // Run baseline render state initialization sequence setup
+        renderDisplay(currentCubeString);
+    </script>
+</body>
+</html>

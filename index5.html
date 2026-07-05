@@ -66,7 +66,7 @@
 </head>
 <body>
 
-    <h2>🧩 Brrrowser-Based Rubik's Cube Solver <a href="index_prior.html">(or other?)</a></h2>
+    <h2>🧩 Brrrowser-Based Rubik's Cube Solver <a href="index_prior.html"> (or other? </a></h2>
     <div class="subtitle">Zero Server Needed. Executing 100% locally via static JavaScript.</div>
 
     <div class="control-panel">
@@ -74,17 +74,6 @@
         <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2">
         <button onclick="handleExecute()">Execute</button>
         <button class="secondary" onclick="handleReset()">Reset</button>
-    </div>
-
-    <div class="control-panel">
-        <label for="stateInput"><strong>…or solve a full cube STATE (54 stickers):</strong></label><br><br>
-        <input type="text" id="stateInput" style="width: 100%; box-sizing: border-box;"
-               value="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
-               placeholder="54 chars, faces in U R F D L B order"><br><br>
-        <button onclick="handleSolveState()">Solve State</button>
-        <span class="meta-info" style="margin-left:10px;">
-            9 chars per face, order U&nbsp;R&nbsp;F&nbsp;D&nbsp;L&nbsp;B. Each char = the face-letter of that sticker's color. Solved = all U's, then R's, etc.
-        </span>
     </div>
 
     <h3>Live Monospace Cross Projection:</h3>
@@ -97,21 +86,10 @@
         <div id="solutionOutput" style="margin-top: 8px; color: #8bc34a; font-weight: bold;"></div>
     </div>
 
-    <!-- FIX 1: bundle ships at /dist/bundle.js (not /lib/bundle.js).
-         FIX 3: no onload="initSolver()" here. This script is parser-blocking,
-         so the inline <script> below is guaranteed to run *after* it has loaded.
-         The onload attribute fired before initSolver() was even defined
-         (the definition lives in the next block), which is why the browser
-         reported "initSolver is not defined". We now call initSolver() from
-         the bottom of that block instead, where cubeSolver is already present. -->
-    <script src="https://cdn.jsdelivr.net/npm/cube-solver@2.4.1/dist/bundle.js"></script>
-
-    <!-- Second solver: cubejs (ldez). Unlike cube-solver, this one can solve
-         from a raw 54-char facelet STATE via Cube.fromString(str).solve().
-         Load order matters: cube.js defines the Cube class, solve.js then
-         attaches Cube.initSolver()/solve() to it. Both are parser-blocking. -->
-    <script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/cube.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/solve.js"></script>
+    <!-- FIX 1: the browser bundle ships at /dist/bundle.js, NOT /lib/bundle.js.
+         With the wrong path the file 404s, which fires onerror (not onload),
+         so initSolver() never ran and the `cubeSolver` global never attached. -->
+    <script src="https://cdn.jsdelivr.net/npm/cube-solver@2.4.1/dist/bundle.js" onload="initSolver()"></script>
 
     <script>
         const SOLVED_STR = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB";
@@ -259,86 +237,7 @@ ${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${c
             renderDisplay(currentCubeString);
         }
 
-        // ================= STATE-BASED SOLVING (cubejs) =================
-        // cubejs needs a one-time precompute (~4-5s) before it can solve.
-        // We do it lazily on the first "Solve State" click so page load stays
-        // fast, and we don't pay for it at all if the feature is never used.
-        let cubejsReady = false;
-
-        // Validate a hand-entered facelet string. This catches typos; it does
-        // NOT prove the cube is physically solvable (corner/edge parity), which
-        // is a deeper check. Centers are fixed, so we enforce them too.
-        function validateState(str) {
-            if (str.length !== 54) return "Need exactly 54 characters (got " + str.length + ").";
-            if (!/^[URFDLB]+$/.test(str)) return "Only the letters U R F D L B are allowed.";
-            for (const f of "URFDLB") {
-                const n = str.split("").filter(c => c === f).length;
-                if (n !== 9) return "Face '" + f + "' appears " + n + " times; each color must appear exactly 9.";
-            }
-            // Centers: index 4=U, 13=R, 22=F, 31=D, 40=L, 49=B (URFDLB order).
-            const centers = { 4:'U', 13:'R', 22:'F', 31:'D', 40:'L', 49:'B' };
-            for (const [i, expected] of Object.entries(centers)) {
-                if (str[i] !== expected) {
-                    return "Center sticker #" + i + " should be '" + expected +
-                           "' but is '" + str[i] + "'. Centers are fixed — check your orientation.";
-                }
-            }
-            return null; // valid
-        }
-
-        function handleSolveState() {
-            const solWrapper = document.getElementById("solutionWrapper");
-            const solOutput  = document.getElementById("solutionOutput");
-            solWrapper.style.display = "block";
-
-            if (typeof Cube === 'undefined') {
-                solOutput.innerText = "cubejs library did not load. Check the cube.js/solve.js script tags.";
-                return;
-            }
-
-            // Strip spaces/newlines so pasted, formatted strings still work.
-            const raw = document.getElementById("stateInput").value.replace(/\s+/g, "").toUpperCase();
-
-            const err = validateState(raw);
-            if (err) { solOutput.innerText = "Invalid state: " + err; return; }
-
-            // Show the entered state in the ASCII cross (same URFDLB indexing).
-            currentCubeString = raw;
-            renderDisplay(currentCubeString);
-
-            if (raw === SOLVED_STR) { solOutput.innerText = "Cube is already solved!"; return; }
-
-            // First use pays the precompute cost. The setTimeout lets the browser
-            // paint this status message before initSolver() freezes the thread.
-            if (!cubejsReady) {
-                solOutput.innerText = "Precomputing solver tables (~5s, one time)…";
-                setTimeout(() => {
-                    Cube.initSolver();
-                    cubejsReady = true;
-                    runStateSolve(raw, solOutput);
-                }, 50);
-            } else {
-                runStateSolve(raw, solOutput);
-            }
-        }
-
-        function runStateSolve(faceStr, solOutput) {
-            try {
-                const solution = Cube.fromString(faceStr).solve();
-                solOutput.innerText = (solution && solution.trim())
-                    ? solution
-                    : "No moves returned (already solved?).";
-            } catch (e) {
-                // A well-formed but physically impossible cube (bad parity) can
-                // land here — the sticker counts were fine but the cube can't exist.
-                solOutput.innerText = "Solver rejected this state: " + e +
-                    "  (Sticker counts looked OK, so this is likely an impossible/parity-invalid cube.)";
-            }
-        }
-
-        // Baseline render + solver init. Both run here, after the parser-blocking
-        // CDN <script> above has already loaded, so cubeSolver is guaranteed present.
-        initSolver();
+        // Baseline render on load.
         renderDisplay(currentCubeString);
     </script>
 </body>

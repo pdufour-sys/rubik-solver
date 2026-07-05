@@ -1,0 +1,214 @@
+1c1
+< !DOCTYPE html>
+---
+> <!DOCTYPE html>
+73,74c73,74
+<         <label for="scrambleInput"><strong>Enter Scramble or String:</strong></label><br><br>
+<         <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2 or full 54-char string">
+---
+>         <label for="scrambleInput"><strong>Enter Scramble (move sequence):</strong></label><br><br>
+>         <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2">
+81c81
+<     
+---
+> 
+88a89,91
+>     <!-- FIX 1: the browser bundle ships at /dist/bundle.js, NOT /lib/bundle.js.
+>          With the wrong path the file 404s, which fires onerror (not onload),
+>          so initSolver() never ran and the `cubeSolver` global never attached. -->
+92,94d94
+< 	console.log("LOC 00.0");
+< 	console.log("LOC 00.1");
+<         
+97d96
+< 	console.log("LOC 00.2");
+99,123c98,115
+<         // FIXED: Changed parentheses () to square brackets []
+<         const BASE_MOVES = {
+<             'U': [[0, 2, 8, 6], [1, 5, 7, 3], [38, 11, 20, 47], [37, 10, 19, 46], [36, 9, 18, 45]],
+<             'D': [[27, 29, 35, 33], [28, 32, 34, 30], [24, 15, 42, 51], [25, 16, 43, 52], [26, 17, 44, 53]],
+<             'R': [[9, 11, 17, 15], [10, 14, 16, 12], [2, 47, 29, 20], [5, 46, 32, 23], [8, 45, 35, 26]],
+<             'L': [[36, 38, 44, 42], [37, 41, 43, 39], [0, 18, 27, 53], [3, 21, 30, 50], [6, 24, 33, 47]],
+<             'F': [[18, 20, 26, 24], [19, 23, 25, 21], [6, 9, 29, 44], [7, 12, 28, 41], [8, 15, 27, 38]],
+<             'B': [[45, 47, 53, 51], [46, 50, 52, 48], [2, 36, 33, 17], [1, 39, 34, 14], [0, 42, 35, 11]]
+<         };
+< 
+< 	console.log("LOC 00.3");
+< 
+< 	let isSolverReady = false;
+< 
+< 	console.log("LOC 00.4");
+< 
+< 	function initSolver() {
+< 	    console.log("LOC initSolver LOC 01");
+< 	    console.log("CDN Library loaded successfully!");
+< 	    if (typeof cubeSolver !== 'undefined') {
+< 		console.log("cubeSolver global object verified in memory.");
+< 		isSolverReady = true;  
+< 		if (cubeSolver.initialize) {
+< 		    cubeSolver.initialize('kociemba');
+< 		}
+---
+>         // Cumulative move sequence since the last reset. This is what actually
+>         // gets handed to the solver (see FIX 2 below).
+>         let scrambleHistory = "";
+> 
+>         let isSolverReady = false;
+> 
+>         function initSolver() {
+>             console.log("initSolver: CDN library loaded.");
+>             if (typeof cubeSolver !== 'undefined') {
+>                 console.log("cubeSolver global verified in memory.");
+>                 isSolverReady = true;
+>                 // Optional pre-warm so the first real solve isn't ~2s slower.
+>                 // NOTE: this is synchronous and blocks the main thread for a
+>                 // couple of seconds. For production the library README
+>                 // recommends running it inside a web worker.
+>                 if (cubeSolver.initialize) {
+>                     cubeSolver.initialize('kociemba');
+>                 }
+125,141c117,118
+< 		console.log("Error: Script loaded but global object was not attached.");
+< 	    }
+<         }
+< 
+< 	function initSolver() {
+< 	    console.log("LOC initSolver LOC 01");
+< 	    console.log("CDN Library loaded successfully!");
+< 	        if (typeof cubeSolver !== 'undefined') {
+< 		    console.log("cubeSolver global object verified in memory.");
+< 		    isSolverReady = true;  
+< 		   // Optional: Pre-initialize the Kociemba tables so the first click is fast
+< 		   if (cubeSolver.initialize) {
+< 		       cubeSolver.initialize('kociemba');
+< 		   }
+<                 } else {
+< 		    console.log("Error: Script loaded but global object was not attached.");
+< 		}
+---
+>                 console.log("Error: script loaded but global object was not attached.");
+>             }
+144c121
+< 
+---
+>         // ---- Facelet move engine: used ONLY to drive the ASCII display ----
+146d122
+< 	    console.log("LOC ACB 01");
+148d123
+<             // Define manual cycle handling tuples explicitly matching our internal map mappings
+157,158d131
+<             
+< 	    console.log("LOC ACB 02");
+165d137
+< 	    console.log("LOC ACB 03");
+170d141
+< 	    console.log("LOC executeMoveSequence 01");
+173d143
+< 	    console.log("LOC executeMoveSequence 02");
+186d155
+< 	    console.log("LOC executeMoveSequence 03");
+191d159
+< 	    console.log("LOC renderDisplay 01");
+194c162
+<             
+---
+> 
+197d164
+<             // Generate clean ASCII layout block
+214,220c181,184
+< 	    console.log("LOC handleExecute 01")
+< 
+< 	    // Safety gate: stop the function if the library isn't verified yet
+< 	    if (!isSolverReady) {
+< 	        console.log("LOC handleExecute - Solver not ready yet!");
+< 		alert("The cube solver library is still loading in the background. Please try again in a moment.");
+< 		return;
+---
+>             // Safety gate: don't call into the library until it's verified.
+>             if (!isSolverReady) {
+>                 alert("The cube solver library is still loading in the background. Please try again in a moment.");
+>                 return;
+222c186
+<         
+---
+> 
+228,236c192,199
+<             // Check if user input an explicit 54 character state map string directly
+<             if (rawVal.length === 54 && /^[URFDLB]+$/i.test(rawVal)) {
+< 	        console.log("LOC handleExecute 02")
+<                 currentCubeString = rawVal.toUpperCase();
+<             } else {
+< 	        console.log("LOC handleExecute 03")
+<                 // Otherwise treat input value as sequential structural turns
+<                 currentCubeString = executeMoveSequence(rawVal, currentCubeString);
+< 	        console.log("LOC handleExecute 04")
+---
+>             // Validate as a move sequence (this library solves from MOVES, not
+>             // from a raw 54-char facelet state).
+>             const tokens = rawVal.split(/\s+/).filter(Boolean);
+>             const validMove = /^[URFDLB][2']?$/i;
+>             if (tokens.length === 0 || !tokens.every(t => validMove.test(t))) {
+>                 solWrapper.style.display = "block";
+>                 solOutput.innerText = "Enter a move sequence like: R2 U' F L2 (faces U R F D L B, optional 2 or ').";
+>                 return;
+239c202,203
+< 	    console.log("LOC handleExecute 05")
+---
+>             // Advance the DISPLAY using your facelet engine (cumulative).
+>             currentCubeString = executeMoveSequence(rawVal, currentCubeString);
+241d204
+< 	    console.log("LOC handleExecute 06")
+243c206,209
+<             // Compute local JavaScript calculation solutions via CDN engine hooks
+---
+>             // Accumulate the moves so the solver sees the full state, not just
+>             // the latest batch.
+>             scrambleHistory = (scrambleHistory + " " + rawVal).trim();
+> 
+245d210
+< 	        console.log("LOC handleExecute 06 solved")
+252,256c217,220
+<                 // The library computes Kociemba algorithms directly matching standard outputs
+< 	        console.log("LOC handleExecute seeking");
+< 	        console.log("LOC handleExecute "+currentCubeString);
+<                 let resultSol = cubeSolver.solve(currentCubeString, 'kociemba');
+< 	        console.log("LOC handleExecute 10 ");
+---
+>                 // FIX 2: hand solve() the MOVE SEQUENCE, not the facelet string.
+>                 // cubeSolver.solve(scramble, 'kociemba') expects standard-notation
+>                 // moves; it applies them to a solved cube internally, then solves.
+>                 let resultSol = cubeSolver.solve(scrambleHistory, 'kociemba');
+258,260c222,224
+< 	        console.log("LOC handleExecute 11 ");
+<                 solOutput.innerText = resultSol ? resultSol : "Optimal path verified or already at baseline.";
+< 	        console.log("LOC handleExecute 12 ");
+---
+>                 solOutput.innerText = (resultSol && resultSol.trim())
+>                     ? resultSol
+>                     : "Already solved (net identity).";
+262c226
+< 	        console.log("LOC handleExecute 13 caught error "+err);
+---
+>                 console.log("solve() threw: " + err);
+264,266c228
+< 	        console.log("LOC handleExecute 14 ");
+<                 solOutput.innerText = "Processing sequence error. Verify input tracking validity.";
+< 	        console.log("LOC handleExecute 15 ");
+---
+>                 solOutput.innerText = "Processing error: " + err;
+271d232
+< 	    console.log("LOC handleReset 00 ");
+273c234
+< 	    console.log("LOC handleReset 01 ");
+---
+>             scrambleHistory = "";
+275d235
+< 	    console.log("LOC handleReset 02 ");
+277d236
+< 	    console.log("LOC handleReset 03 "+currentCubeString);
+279d237
+< 	    console.log("LOC handleReset 04 ");
+282c240
+<         // Run baseline render state initialization sequence setup
+---
+>         // Baseline render on load.
