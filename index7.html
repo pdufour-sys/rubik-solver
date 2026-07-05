@@ -70,14 +70,10 @@
     <div class="subtitle">Zero Server Needed. Executing 100% locally via static JavaScript.</div>
 
     <div class="control-panel">
-        <label for="colorInput"><strong>Solve by COLORS (spaces allowed, case-insensitive):</strong></label><br><br>
-        <input type="text" id="colorInput" style="width: 100%; box-sizing: border-box;"
-               value="WWWWWWWWW BBBBBBBBB RRRRRRRRR YYYYYYYYY GGGGGGGGG OOOOOOOOO"
-               placeholder="54 color stickers in U R F D L B block order"><br><br>
-        <button onclick="handleSolveColors()">Solve Colors</button>
-        <span class="meta-info" style="margin-left:10px;">
-            W→white (Up), B→blue (Right), R→red (Front), Y→yellow (Down), G→green (Left), O→orange (Back). Blocks in U&nbsp;R&nbsp;F&nbsp;D&nbsp;L&nbsp;B order.
-        </span>
+        <label for="scrambleInput"><strong>Enter Scramble (move sequence):</strong></label><br><br>
+        <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2">
+        <button onclick="handleExecute()">Execute</button>
+        <button class="secondary" onclick="handleReset()">Reset</button>
     </div>
 
     <div class="control-panel">
@@ -89,13 +85,6 @@
         <span class="meta-info" style="margin-left:10px;">
             9 chars per face, order U&nbsp;R&nbsp;F&nbsp;D&nbsp;L&nbsp;B. Each char = the face-letter of that sticker's color. Solved = all U's, then R's, etc.
         </span>
-    </div>
-
-    <div class="control-panel">
-        <label for="scrambleInput"><strong>…or enter a Scramble (move sequence):</strong></label><br><br>
-        <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2">
-        <button onclick="handleExecute()">Execute</button>
-        <button class="secondary" onclick="handleReset()">Reset</button>
     </div>
 
     <h3>Live Monospace Cross Projection:</h3>
@@ -344,76 +333,6 @@ ${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${c
                 // land here — the sticker counts were fine but the cube can't exist.
                 solOutput.innerText = "Solver rejected this state: " + e +
                     "  (Sticker counts looked OK, so this is likely an impossible/parity-invalid cube.)";
-            }
-        }
-
-        // ================= COLOR-BASED SOLVING (section 3) =================
-        // Same positional layout as section 2 (U R F D L B blocks), but the
-        // alphabet is sticker COLORS. We translate each color to its face
-        // letter, then feed the existing cubejs path. This color scheme:
-        //   White=Up, Blue=Right, Red=Front, Yellow=Down, Green=Left, Orange=Back
-        const COLOR_TO_FACE = { W:'U', B:'R', R:'F', Y:'D', G:'L', O:'B' };
-        const COLOR_NAMES   = { W:'white', B:'blue', R:'red', Y:'yellow', G:'green', O:'orange' };
-
-        // Validation in COLOR terms so the messages make sense to a color user.
-        // Input is assumed already whitespace-stripped and uppercased.
-        function validateColorState(str) {
-            const invalid = [...new Set(str.split("").filter(c => !(c in COLOR_TO_FACE)))];
-            if (invalid.length) {
-                return "Invalid character(s): " + invalid.map(c => "'" + c + "'").join(", ") +
-                       ". Allowed: W B R Y G O (white, blue, red, yellow, green, orange) and spaces.";
-            }
-            if (str.length !== 54) return "Need exactly 54 stickers (got " + str.length + ").";
-            for (const c of "WBRYGO") {
-                const n = str.split("").filter(x => x === c).length;
-                if (n !== 9) return COLOR_NAMES[c] + " (" + c + ") appears " + n +
-                                    " times; each color must appear exactly 9.";
-            }
-            // Centers are fixed: pos 4=W, 13=B, 22=R, 31=Y, 40=G, 49=O.
-            const centers = { 4:'W', 13:'B', 22:'R', 31:'Y', 40:'G', 49:'O' };
-            for (const [i, expected] of Object.entries(centers)) {
-                if (str[i] !== expected) {
-                    return "Center sticker #" + i + " should be " + COLOR_NAMES[expected] +
-                           " (" + expected + ") but is '" + str[i] +
-                           "'. Centers are fixed — check your face order / orientation.";
-                }
-            }
-            return null; // valid
-        }
-
-        function handleSolveColors() {
-            const solWrapper = document.getElementById("solutionWrapper");
-            const solOutput  = document.getElementById("solutionOutput");
-            solWrapper.style.display = "block";
-
-            if (typeof Cube === 'undefined') {
-                solOutput.innerText = "cubejs library did not load. Check the cube.js/solve.js script tags.";
-                return;
-            }
-
-            // Spaces (and any whitespace) ignored; everything uppercased.
-            const cleaned = document.getElementById("colorInput").value.replace(/\s+/g, "").toUpperCase();
-
-            const err = validateColorState(cleaned);
-            if (err) { solOutput.innerText = err; return; }
-
-            // Translate colors -> face letters, then reuse the section-2 pipeline.
-            const faceStr = cleaned.split("").map(c => COLOR_TO_FACE[c]).join("");
-
-            currentCubeString = faceStr;
-            renderDisplay(currentCubeString);
-
-            if (faceStr === SOLVED_STR) { solOutput.innerText = "Cube is already solved!"; return; }
-
-            if (!cubejsReady) {
-                solOutput.innerText = "Precomputing solver tables (~5s, one time)…";
-                setTimeout(() => {
-                    Cube.initSolver();
-                    cubejsReady = true;
-                    runStateSolve(faceStr, solOutput);
-                }, 50);
-            } else {
-                runStateSolve(faceStr, solOutput);
             }
         }
 

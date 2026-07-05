@@ -70,14 +70,10 @@
     <div class="subtitle">Zero Server Needed. Executing 100% locally via static JavaScript.</div>
 
     <div class="control-panel">
-        <label for="colorInput"><strong>Solve by COLORS (spaces allowed, case-insensitive):</strong></label><br><br>
-        <input type="text" id="colorInput" style="width: 100%; box-sizing: border-box;"
-               value="WWWWWWWWW BBBBBBBBB RRRRRRRRR YYYYYYYYY GGGGGGGGG OOOOOOOOO"
-               placeholder="54 color stickers in U R F D L B block order"><br><br>
-        <button onclick="handleSolveColors()">Solve Colors</button>
-        <span class="meta-info" style="margin-left:10px;">
-            W→white (Up), B→blue (Right), R→red (Front), Y→yellow (Down), G→green (Left), O→orange (Back). Blocks in U&nbsp;R&nbsp;F&nbsp;D&nbsp;L&nbsp;B order.
-        </span>
+        <label for="scrambleInput"><strong>Enter Scramble (move sequence):</strong></label><br><br>
+        <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2">
+        <button onclick="handleExecute()">Execute</button>
+        <button class="secondary" onclick="handleReset()">Reset</button>
     </div>
 
     <div class="control-panel">
@@ -92,10 +88,14 @@
     </div>
 
     <div class="control-panel">
-        <label for="scrambleInput"><strong>…or enter a Scramble (move sequence):</strong></label><br><br>
-        <input type="text" id="scrambleInput" value="R2 U' F L2" placeholder="e.g. R2 U' F L2">
-        <button onclick="handleExecute()">Execute</button>
-        <button class="secondary" onclick="handleReset()">Reset</button>
+        <label for="colorInput"><strong>…or solve by COLORS (spaces allowed, case-insensitive):</strong></label><br><br>
+        <input type="text" id="colorInput" style="width: 100%; box-sizing: border-box;"
+               value="WWWWWWWWW BBBBBBBBB RRRRRRRRR YYYYYYYYY GGGGGGGGG OOOOOOOOO"
+               placeholder="54 color stickers in U R F D L B block order"><br><br>
+        <button onclick="handleSolveColors()">Solve Colors</button>
+        <span class="meta-info" style="margin-left:10px;">
+            W→white (Up), B→blue (Right), R→red (Front), Y→yellow (Down), G→green (Left), O→orange (Back). Same block order as above.
+        </span>
     </div>
 
     <h3>Live Monospace Cross Projection:</h3>
