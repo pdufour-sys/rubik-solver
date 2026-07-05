@@ -208,17 +208,17 @@ ${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${c
 	        console.log("LOC handleExecute seeking");
 	        console.log("LOC handleExecute "+currentCubeString);
                 let resultSol = cubeSolver.solve(currentCubeString, 'kociemba');
-	        console.log("LOC handleExecute 00 ");
+	        console.log("LOC handleExecute 10 ");
                 solWrapper.style.display = "block";
-	        console.log("LOC handleExecute 00 ");
+	        console.log("LOC handleExecute 11 ");
                 solOutput.innerText = resultSol ? resultSol : "Optimal path verified or already at baseline.";
-	        console.log("LOC handleExecute 00 ");
+	        console.log("LOC handleExecute 12 ");
             } catch (err) {
-	        console.log("LOC handleExecute 00 ");
+	        console.log("LOC handleExecute 13 caught error"+err);
                 solWrapper.style.display = "block";
-	        console.log("LOC handleExecute 00 ");
+	        console.log("LOC handleExecute 14 ");
                 solOutput.innerText = "Processing sequence error. Verify input tracking validity.";
-	        console.log("LOC handleExecute 00 ");
+	        console.log("LOC handleExecute 15 ");
             }
         }
 
@@ -229,7 +229,7 @@ ${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${c
             document.getElementById("scrambleInput").value = "R2 U' F L2";
 	    console.log("LOC handleReset 02 ");
             document.getElementById("solutionWrapper").style.display = "none";
-	    console.log("LOC handleReset 03 ");
+	    console.log("LOC handleReset 03 "+currentCubeString);
             renderDisplay(currentCubeString);
 	    console.log("LOC handleReset 04 ");
         }
