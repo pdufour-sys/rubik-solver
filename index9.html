@@ -195,23 +195,18 @@
 
             trackingElement.innerText = "Flat String: " + cubeStr;
 
-            // The projection shows COLOR letters (W B R Y G O). currentCubeString
-            // is always in face letters (U R F D L B) — that's the solver's format
-            // and what the flat string above reports — so we map it here for display.
-            const d = cubeStr.split("").map(ch => FACE_TO_COLOR[ch] || ch).join("");
-
             layoutElement.innerText = `-------------------------------------------
-                ${d[0]} ${d[1]} ${d[2]}
-                ${d[3]} ${d[4]} ${d[5]}
-                ${d[6]} ${d[7]} ${d[8]}
+          ${cubeStr[0]} ${cubeStr[1]} ${cubeStr[2]}
+          ${cubeStr[3]} ${cubeStr[4]} ${cubeStr[5]}
+          ${cubeStr[6]} ${cubeStr[7]} ${cubeStr[8]}
 -------------------------------------------
-${d[45]} ${d[46]} ${d[47]} | ${d[36]} ${d[37]} ${d[38]} | ${d[18]} ${d[19]} ${d[20]} | ${d[9]} ${d[10]} ${d[11]}
-${d[48]} ${d[49]} ${d[50]} | ${d[39]} ${d[40]} ${d[41]} | ${d[21]} ${d[22]} ${d[23]} | ${d[12]} ${d[13]} ${d[14]}
-${d[51]} ${d[52]} ${d[53]} | ${d[42]} ${d[43]} ${d[44]} | ${d[24]} ${d[25]} ${d[26]} | ${d[15]} ${d[16]} ${d[17]}
+${cubeStr[45]} ${cubeStr[46]} ${cubeStr[47]} | ${cubeStr[36]} ${cubeStr[37]} ${cubeStr[38]} | ${cubeStr[18]} ${cubeStr[19]} ${cubeStr[20]} | ${cubeStr[9]} ${cubeStr[10]} ${cubeStr[11]}
+${cubeStr[48]} ${cubeStr[49]} ${cubeStr[50]} | ${cubeStr[39]} ${cubeStr[40]} ${cubeStr[41]} | ${cubeStr[21]} ${cubeStr[22]} ${cubeStr[23]} | ${cubeStr[12]} ${cubeStr[13]} ${cubeStr[14]}
+${cubeStr[51]} ${cubeStr[52]} ${cubeStr[53]} | ${cubeStr[42]} ${cubeStr[43]} ${cubeStr[44]} | ${cubeStr[24]} ${cubeStr[25]} ${cubeStr[26]} | ${cubeStr[15]} ${cubeStr[16]} ${cubeStr[17]}
 -------------------------------------------
-                ${d[27]} ${d[28]} ${d[29]}
-                ${d[30]} ${d[31]} ${d[32]}
-                ${d[33]} ${d[34]} ${d[35]}
+          ${cubeStr[27]} ${cubeStr[28]} ${cubeStr[29]}
+          ${cubeStr[30]} ${cubeStr[31]} ${cubeStr[32]}
+          ${cubeStr[33]} ${cubeStr[34]} ${cubeStr[35]}
 -------------------------------------------`;
         }
 
@@ -358,8 +353,6 @@ ${d[51]} ${d[52]} ${d[53]} | ${d[42]} ${d[43]} ${d[44]} | ${d[24]} ${d[25]} ${d[
         // letter, then feed the existing cubejs path. This color scheme:
         //   White=Up, Blue=Right, Red=Front, Yellow=Down, Green=Left, Orange=Back
         const COLOR_TO_FACE = { W:'U', B:'R', R:'F', Y:'D', G:'L', O:'B' };
-        // Inverse, used to show COLOR letters in the projection: U→W, R→B, F→R, D→Y, L→G, B→O.
-        const FACE_TO_COLOR = Object.fromEntries(Object.entries(COLOR_TO_FACE).map(([c, f]) => [f, c]));
         const COLOR_NAMES   = { W:'white', B:'blue', R:'red', Y:'yellow', G:'green', O:'orange' };
 
         // Validation in COLOR terms so the messages make sense to a color user.
